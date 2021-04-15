@@ -1,9 +1,8 @@
-#!/usr/bin/python
 
+#!/usr/bin/python
 import sys
 import math
 import csv
-
 
 def fileStuff(filepath):
     f = open(filepath,"r")
@@ -38,7 +37,6 @@ def astar():
     print("Running astar...")
 
 
-
 if __name__ == '__main__':
 
     #Here we will parse the files to get the proper input
@@ -62,5 +60,6 @@ if __name__ == '__main__':
         astar()
     else:
         print("Invalid Mode")
+
 
 
