@@ -2,6 +2,28 @@
 
 import sys
 import math
+import csv
+
+
+def fileStuff(filepath):
+    f = open(filepath,"r")
+    reader = csv.reader(f)
+    left = next(reader)
+    leftBank = [int(left[0]), int(left[1]), int(left[2])]
+    right = next(reader)
+    rightBank = [int(right[0]), int(right[1]), int(right[2])]
+    f.close()
+    return leftBank, rightBank
+
+def entry():
+    initialLeft, initialRight = fileStuff(sys.argv[1])
+    print("Left Bank", initialLeft)
+    print("Right Bank", initialRight)
+    finalLeft, finalRight = fileStuff(sys.argv[2])
+    print("Left Bank", finalLeft)
+    print("Right Bank", finalRight)
+    algToUse = sys.argv[3]
+    outputFile = sys.argv[4]
 
 def bfs():
     print("Running bfs...")
@@ -16,7 +38,8 @@ def astar():
     print("Running astar...")
 
 
-def main():
+
+if __name__ == '__main__':
 
     #Here we will parse the files to get the proper input
 
@@ -40,6 +63,4 @@ def main():
     else:
         print("Invalid Mode")
 
-
-main()
 
