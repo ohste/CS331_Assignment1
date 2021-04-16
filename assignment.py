@@ -4,6 +4,7 @@ import sys
 import math
 import csv
 
+#Generic file handling function to read the two state files
 def fileStuff(filepath):
     f = open(filepath,"r")
     reader = csv.reader(f)
@@ -14,33 +15,35 @@ def fileStuff(filepath):
     f.close()
     return leftBank, rightBank
 
+#Gets the initial and final states and stores them in named variables
 def entry():
     initialLeft, initialRight = fileStuff(sys.argv[1])
-    print("Left Bank", initialLeft)
-    print("Right Bank", initialRight)
+    initialState = [initialLeft, initialRight]
     finalLeft, finalRight = fileStuff(sys.argv[2])
-    print("Left Bank", finalLeft)
-    print("Right Bank", finalRight)
-    algToUse = sys.argv[3]
+    finalState = [finalLeft, finalRight]
     outputFile = sys.argv[4]
+    return initialState, finalState, outputFile
 
-def bfs():
+def bfs(initialState, finalState, outputFile):
     print("Running bfs...")
 
-def dfs():
-    print("Running dfs...")   
+def dfs(initialState, finalState, outputFile):
+    print("Running dfs...")
 
-def iddfs():
+def iddfs(initialState, finalState, outputFile):
     print("Running iddfs...")
 
-def astar():
+def astar(initialState, finalState, outputFile):
     print("Running astar...")
 
 
 if __name__ == '__main__':
 
+    if(len(sys.argv) != 5):
+        print("Err: Missing arguments")
+        quit()
     #Here we will parse the files to get the proper input
-
+    initialState, finalState, outputFile = entry()
 
     #Here we get the mode that we want to run each number represents an algorithm
     # 1 = bfs (breadth first search)
@@ -51,15 +54,12 @@ if __name__ == '__main__':
     algo_mode = sys.argv[3]
 
     if algo_mode == "1":
-        bfs()
+        bfs(initialState, finalState, outputFile)
     elif algo_mode == "2":
-        dfs()
+        dfs(initialState, finalState, outputFile)
     elif algo_mode == "3":
-        iddfs()
+        iddfs(initialState, finalState, outputFile)
     elif algo_mode == "4":
-        astar()
+        astar(initialState, finalState, outputFile)
     else:
         print("Invalid Mode")
-
-
-
