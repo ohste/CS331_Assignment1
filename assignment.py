@@ -69,6 +69,7 @@ def generateSuccessors(node, successors = []):
 
     #print("Boat is in Right Bank:", is_boat_right_bank, " Boat:", boat_bank)
     print("Current state: ", node)
+    explored_set.append(node)
     #1) Conditions: Put one chicken in the boat, more chickens than wolves
 
     #For Right Banks
@@ -92,7 +93,6 @@ def generateSuccessors(node, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 1 Successor: ", successor_final)
         successors.append(successor_final)
-        explored_set.append(successor_final)
 
     #2)Conditions: Put two chickens in the boat, At least 2 chickens at Boat bank, Destination wolves - destination chickens <= 2, destination chickens > destination wolves + 1 OR boat bank chickens == 2
 
@@ -116,7 +116,6 @@ def generateSuccessors(node, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 2 Successor: ", successor_final)
         successors.append(successor_final)
-        explored_set.append(successor_final)
 
     #3)Conditions: Put one wolf in the boat, Destination bank chickens must be greater than wolves + incoming wolf.
 
@@ -140,7 +139,6 @@ def generateSuccessors(node, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 3 Successor: ", successor_final)
         successors.append(successor_final)
-        explored_set.append(successor_final)
 
     #4)Condtions: Put one wolf and one chicken in the boat, Destination bank needs wolves <= chickens, Boat bank needs wolves >=1 & chickens >= 1
 
@@ -168,7 +166,7 @@ def generateSuccessors(node, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 4 Successor: ", successor_final)
         successors.append(successor_final)
-        explored_set.append(successor_final)
+
 
     #5)Conditions: Put two wolves in the boat, Destination bank chickens == 0 OR Destination bank wolves <= chickens -1, Boat bank wolves >= 2
 
@@ -192,7 +190,7 @@ def generateSuccessors(node, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 5 Successor: ", successor_final)
         successors.append(successor_final)
-        explored_set.append(successor_final)
+
 
     print("Successors: ", successors)
     expansionCounter += 1
@@ -217,17 +215,20 @@ def bfs(initialState, finalState, outputFile):
 
             break
 
-
+#Function to solve depth-first search
 def dfs(initialState, finalState, outputFile):
-    nodeList = [initialState]
     currentNode = initialState
     explored_set.append(initialState)
 
     dead_end = False
     print("final state is: ", finalState)
+
+    #Keep searching the graph if we don't find the final state
     while (currentNode != finalState):
         successors = generateSuccessors(currentNode)
+        #Check if we've reached a dead end
         if (len(successors) == 0):
+            dead_end = True
             break
         next_to_check = successors.pop()
         currentNode = next_to_check
@@ -240,6 +241,7 @@ def dfs(initialState, finalState, outputFile):
 
 def iddfs(initialState, finalState, outputFile):
     print("Running iddfs...")
+
 
 def astar(initialState, finalState, outputFile):
     print("Running astar...")
