@@ -38,15 +38,6 @@ def generateSuccessors(node):
     #node[0] is left bank
     #node[1] is right bank
 
-    #node[0][0] is left bank chickens
-    left_chickens = node[0][0]
-    #node[1][0]is right bank chickens
-    right_chickens = node[1][0]
-    #node[0][1] is left bank wolves
-    left_wolves = node[0][1]
-    #node [1][1] is right bank wolves
-    right_wolves = node[1][1]
-
     #Find where boat is
     is_boat_right_bank = True
     
@@ -54,22 +45,114 @@ def generateSuccessors(node):
     if node[1][2] == 1:
         is_boat_right_bank = True
         boat_bank = node[1]
+        destination_bank = node[0]
     else:
         is_boat_right_bank = False
         boat_bank = node[0]
+        destination_bank = node[1]
 
-            
+    #Get chicken and wolves from boat bank
+    boat_bank_chickens = boat_bank[0]
+    boat_bank_wolves = boat_bank[1]
+
+    #Get chicken and wolves from destination bank
+    destination_bank_chickens = destination_bank[0]
+    destination_bank_wolves = destination_bank[1]
+        
     print("Boat is in Right Bank:", is_boat_right_bank, " Boat:", boat_bank)
-    #1)Put one chicken in the boat
+    #1) Conditions: Put one chicken in the boat, more chickens than wolves
+    if(boat_bank_chickens >= 1) and ((boat_bank_chickens > boat_bank_wolves) or (boat_bank_chickens == 1)) and ((destination_bank_wolves - destination_bank_chickens) <= 1):
+        #For Right Banks
+        if is_boat_right_bank:
+            successor_left = destination_bank.copy()
+            successor_left[0] += 1
+            successor_right = boat_bank.copy()
+            successor_right[0] -= 1
+            print("Condition 1 Successor: ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
+        else: #For Left Bank
+            successor_left = boat_bank.copy()
+            successor_left[0] -= 1
+            successor_right = destination_bank.copy()
+            successor_right[0] += 1
+            print("Condition 1 Successor: ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
+     
+    #2)Conditions: Put two chickens in the boat, At least 2 chickens at Boat bank, Destination wolves - destination chickens <= 2, destination chickens > destination wolves + 1 OR boat bank chickens == 2
+    if (boat_bank_chickens >= 2) and ((destination_bank_wolves - destination_bank_chickens) <= 2) and ((destination_bank_chickens > (destination_bank_wolves + 1)) or (boat_bank_chickens == 2)):
+        if is_boat_right_bank:
+            successor_left = destination_bank.copy()
+            successor_left[0] += 2
+            successor_right = boat_bank.copy()
+            successor_right[0] -= 2
+            print("Condition 5 Successor (Right): ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
+        else: #For Left Bank
+            successor_left = boat_bank.copy()
+            successor_left[0] -= 2
+            successor_right = destination_bank.copy()
+            successor_right[0] += 2
+            print("Condition 5 Successor (Left): ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
+            
+    #3)Conditions: Put one wolf in the boat, Destination bank chickens must be greater than wolves + incoming wolf.
+    if((destination_bank_wolves < destination_bank_chickens)or(destination_bank_chickens == 0)) and (boat_bank_wolves >= 1):
+        
+        if is_boat_right_bank:
+            successor_left = destination_bank.copy()
+            successor_left[1] += 1
+            successor_right = boat_bank.copy()
+            successor_right[1] -= 1
+            print("Condition 3 Successor (Right): ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
+        else: #For Left Bank
+            successor_left = boat_bank.copy()
+            successor_left[1] -= 1
+            successor_right = destination_bank.copy()
+            successor_right[1] += 1
+            print("Condition 3 Successor (Left): ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
 
-    #2)Put two chickens in the boat
+    #4)Condtions: Put one wolf and one chicken in the boat, Destination bank needs wolves <= chickens, Boat bank needs wolves >=1 & chickens >= 1
+    if (destination_bank_wolves <= destination_bank_chickens) and (boat_bank_chickens >= 1) and (boat_bank_wolves >= 1):
+        if is_boat_right_bank:
+            successor_left = destination_bank.copy()
+            successor_left[0] += 1
+            successor_left[1] += 1
+            successor_right = boat_bank.copy()
+            successor_right[0] -= 1
+            successor_right[1] -= 1
+            print("Condition 4 Successor (Right): ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
+        else: #For Left Bank
+            successor_left = boat_bank.copy()
+            successor_left[0] -= 1
+            successor_left[1] -= 1
+            successor_right = destination_bank.copy()
+            successor_right[0] -= 1
+            successor_right[1] += 1
+            print("Condition 4 Successor (Left): ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
 
-    #3)Put one wolf in the boat
+    #5)Conditions: Put two wolves in the boat, Destination bank chickens == 0 OR Destination bank wolves <= chickens -1, Boat bank wolves >= 2
+    if (boat_bank_wolves >= 2) and (destination_bank_wolves <= (destination_bank_chickens - 1)) or (destination_bank_chickens == 0):
+        if is_boat_right_bank:
+            successor_left = destination_bank.copy()
+            successor_left[1] += 2
+            successor_right = boat_bank.copy()
+            successor_right[1] -= 2
+            print("Condition 5 Successor (Right): ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
+        else: #For Left Bank
+            successor_left = boat_bank.copy()
+            successor_left[1] -= 2
+            successor_right = destination_bank.copy()
+            successor_right[1] += 2
+            print("Condition 5 Successor (Left): ", successor_left, successor_right)
+            successors.append([successor_left, successor_right])
 
-    #4)Put one wolf and one chicken in the boat
 
-    #5)Put two wolves in the boat
-
+    print("Successors: ", successors)
     expansionCounter += 1
     return successors
 
