@@ -205,6 +205,7 @@ def bfs(initialState, finalState, outputFile):
     #Establishes a queue of nodes
     nodeList = [initialState]
     currentNode = initialState
+    checkedMoves = []
 
     while True:
         if currentNode == finalState:
@@ -215,7 +216,17 @@ def bfs(initialState, finalState, outputFile):
 
             successors = generateSuccessors(newNode)
 
-            break
+            for successor in successors:
+                print("Successor: ", successor, "Final State: ", finalState, "Expansions: ", expansionCounter)
+                if successor == finalState:
+                    currentNode = successor
+                    break
+                else:
+                    if successor not in checkedMoves:
+                        nodeList.append(successor)
+                        checkedMoves.append(successor)
+    return
+
 
 
 def dfs(initialState, finalState, outputFile):
