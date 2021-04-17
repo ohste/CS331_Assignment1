@@ -4,7 +4,7 @@ import sys
 import math
 import csv
 
-#Global Counters 
+#Global Counters
 expansionCounter = 0
 
 #Generic file handling function to read the two state files
@@ -27,20 +27,27 @@ def entry():
     outputFile = sys.argv[4]
     return initialState, finalState, outputFile
 
+def check_valid_state(state):
+    isValid = True
+    for bank in state:
+        if (bank[1]>bank[0] and bank[0] != 0):
+            isValid = False
+        if (bank[0] < 0 or bank[1] < 0):
+            isValid = False
+    return isValid
 
-def generateSuccessors(node):
+def generateSuccessors(node, successors = []):
     print("Generating Successors...")
     global expansionCounter
-    successors = []
 
-    
+
     #First we have to find out which side the boat is on
     #node[0] is left bank
     #node[1] is right bank
 
     #Find where boat is
     is_boat_right_bank = True
-    
+
 
     if node[1][2] == 1:
         is_boat_right_bank = True
@@ -58,99 +65,118 @@ def generateSuccessors(node):
     #Get chicken and wolves from destination bank
     destination_bank_chickens = destination_bank[0]
     destination_bank_wolves = destination_bank[1]
-        
+
     print("Boat is in Right Bank:", is_boat_right_bank, " Boat:", boat_bank)
+    print("Current state: ", node)
     #1) Conditions: Put one chicken in the boat, more chickens than wolves
-    if(boat_bank_chickens >= 1) and ((boat_bank_chickens > boat_bank_wolves) or (boat_bank_chickens == 1)) and ((destination_bank_wolves - destination_bank_chickens) <= 1):
-        #For Right Banks
-        if is_boat_right_bank:
-            successor_left = destination_bank.copy()
-            successor_left[0] += 1
-            successor_right = boat_bank.copy()
-            successor_right[0] -= 1
-            print("Condition 1 Successor: ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
-        else: #For Left Bank
-            successor_left = boat_bank.copy()
-            successor_left[0] -= 1
-            successor_right = destination_bank.copy()
-            successor_right[0] += 1
-            print("Condition 1 Successor: ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
-     
-    #2)Conditions: Put two chickens in the boat, At least 2 chickens at Boat bank, Destination wolves - destination chickens <= 2, destination chickens > destination wolves + 1 OR boat bank chickens == 2
-    if (boat_bank_chickens >= 2) and ((destination_bank_wolves - destination_bank_chickens) <= 2) and ((destination_bank_chickens > (destination_bank_wolves + 1)) or (boat_bank_chickens == 2)):
-        if is_boat_right_bank:
-            successor_left = destination_bank.copy()
-            successor_left[0] += 2
-            successor_right = boat_bank.copy()
-            successor_right[0] -= 2
-            print("Condition 5 Successor (Right): ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
-        else: #For Left Bank
-            successor_left = boat_bank.copy()
-            successor_left[0] -= 2
-            successor_right = destination_bank.copy()
-            successor_right[0] += 2
-            print("Condition 5 Successor (Left): ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
-            
-    #3)Conditions: Put one wolf in the boat, Destination bank chickens must be greater than wolves + incoming wolf.
-    if((destination_bank_wolves < destination_bank_chickens)or(destination_bank_chickens == 0)) and (boat_bank_wolves >= 1):
+
+    #For Right Banks
+    if is_boat_right_bank:
+        successor_left = destination_bank.copy()
+        successor_left[0] += 1
+        successor_right = boat_bank.copy()
+        successor_right[0] -= 1
+        successor_left[2] = 1
+        successor_right[2] = 0
+    else: #For Left Bank
+        successor_left = boat_bank.copy()
+        successor_left[0] -= 1
+        successor_right = destination_bank.copy()
+        successor_right[0] += 1
+        successor_right[2] = 1
+        successor_left[2] = 0
         
-        if is_boat_right_bank:
-            successor_left = destination_bank.copy()
-            successor_left[1] += 1
-            successor_right = boat_bank.copy()
-            successor_right[1] -= 1
-            print("Condition 3 Successor (Right): ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
-        else: #For Left Bank
-            successor_left = boat_bank.copy()
-            successor_left[1] -= 1
-            successor_right = destination_bank.copy()
-            successor_right[1] += 1
-            print("Condition 3 Successor (Left): ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
+    if (check_valid_state([successor_left , successor_right])):
+        print("Condition 1 Successor: ", successor_left, successor_right)
+        successors.append([successor_left, successor_right])
+
+    #2)Conditions: Put two chickens in the boat, At least 2 chickens at Boat bank, Destination wolves - destination chickens <= 2, destination chickens > destination wolves + 1 OR boat bank chickens == 2
+
+    if is_boat_right_bank:
+        successor_left = destination_bank.copy()
+        successor_left[0] += 2
+        successor_right = boat_bank.copy()
+        successor_right[0] -= 2
+        successor_left[2] = 1
+        successor_right[2] = 0
+    else: #For Left Bank
+        successor_left = boat_bank.copy()
+        successor_left[0] -= 2
+        successor_right = destination_bank.copy()
+        successor_right[0] += 2
+        successor_right[2] = 1
+        successor_left[2] = 0
+
+    if (check_valid_state([successor_left , successor_right])):
+        print("Condition 2 Successor: ", successor_left, successor_right)
+        successors.append([successor_left, successor_right])
+
+    #3)Conditions: Put one wolf in the boat, Destination bank chickens must be greater than wolves + incoming wolf.
+
+    if is_boat_right_bank:
+        successor_left = destination_bank.copy()
+        successor_left[1] += 1
+        successor_right = boat_bank.copy()
+        successor_right[1] -= 1
+        successor_left[2] = 1
+        successor_right[2] = 0
+    else: #For Left Bank
+        successor_left = boat_bank.copy()
+        successor_left[1] -= 1
+        successor_right = destination_bank.copy()
+        successor_right[1] += 1
+        successor_right[2] = 1
+        successor_left[2] = 0
+
+    if (check_valid_state([successor_left , successor_right])):
+        print("Condition 3 Successor: ", successor_left, successor_right)
+        successors.append([successor_left, successor_right])
 
     #4)Condtions: Put one wolf and one chicken in the boat, Destination bank needs wolves <= chickens, Boat bank needs wolves >=1 & chickens >= 1
-    if (destination_bank_wolves <= destination_bank_chickens) and (boat_bank_chickens >= 1) and (boat_bank_wolves >= 1):
-        if is_boat_right_bank:
-            successor_left = destination_bank.copy()
-            successor_left[0] += 1
-            successor_left[1] += 1
-            successor_right = boat_bank.copy()
-            successor_right[0] -= 1
-            successor_right[1] -= 1
-            print("Condition 4 Successor (Right): ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
-        else: #For Left Bank
-            successor_left = boat_bank.copy()
-            successor_left[0] -= 1
-            successor_left[1] -= 1
-            successor_right = destination_bank.copy()
-            successor_right[0] -= 1
-            successor_right[1] += 1
-            print("Condition 4 Successor (Left): ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
+
+    if is_boat_right_bank:
+        successor_left = destination_bank.copy()
+        successor_left[0] += 1
+        successor_left[1] += 1
+        successor_right = boat_bank.copy()
+        successor_right[0] -= 1
+        successor_right[1] -= 1
+        successor_left[2] = 1
+        successor_right[2] = 0
+    else: #For Left Bank
+        successor_left = boat_bank.copy()
+        successor_left[0] -= 1
+        successor_left[1] -= 1
+        successor_right = destination_bank.copy()
+        successor_right[0] -= 1
+        successor_right[1] += 1
+        successor_right[2] = 1
+        successor_left[2] = 0
+
+    if (check_valid_state([successor_left , successor_right])):
+        print("Condition 4 Successor: ", successor_left, successor_right)
+        successors.append([successor_left, successor_right])
 
     #5)Conditions: Put two wolves in the boat, Destination bank chickens == 0 OR Destination bank wolves <= chickens -1, Boat bank wolves >= 2
-    if (boat_bank_wolves >= 2) and (destination_bank_wolves <= (destination_bank_chickens - 1)) or (destination_bank_chickens == 0):
-        if is_boat_right_bank:
-            successor_left = destination_bank.copy()
-            successor_left[1] += 2
-            successor_right = boat_bank.copy()
-            successor_right[1] -= 2
-            print("Condition 5 Successor (Right): ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
-        else: #For Left Bank
-            successor_left = boat_bank.copy()
-            successor_left[1] -= 2
-            successor_right = destination_bank.copy()
-            successor_right[1] += 2
-            print("Condition 5 Successor (Left): ", successor_left, successor_right)
-            successors.append([successor_left, successor_right])
 
+    if is_boat_right_bank:
+        successor_left = destination_bank.copy()
+        successor_left[1] += 2
+        successor_right = boat_bank.copy()
+        successor_right[1] -= 2
+        successor_left[2] = 1
+        successor_right[2] = 0
+    else: #For Left Bank
+        successor_left = boat_bank.copy()
+        successor_left[1] -= 2
+        successor_right = destination_bank.copy()
+        successor_right[1] += 2
+        successor_right[2] = 1
+        successor_left[2] = 0
+
+    if (check_valid_state([successor_left, successor_right])):
+        print("Condition 5 Successor: ", successor_left, successor_right)
+        successors.append([successor_left, successor_right])
 
     print("Successors: ", successors)
     expansionCounter += 1
@@ -172,14 +198,18 @@ def bfs(initialState, finalState, outputFile):
             newNode = nodeList.pop(0)
 
             successors = generateSuccessors(newNode)
-            
+
             break
 
 
 def dfs(initialState, finalState, outputFile):
-    print("Running dfs...")
-    
+    nodeList = [initialState]
+    currentNode = initialState
 
+    successors = generateSuccessors(currentNode)
+    #print("Successors: ", successors)
+    newsuccessors = generateSuccessors(successors.pop())
+    #print("New Successors: ", newsuccessors)
 def iddfs(initialState, finalState, outputFile):
     print("Running iddfs...")
 
