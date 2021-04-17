@@ -213,6 +213,15 @@ def bfs(initialState, finalState, outputFile):
             newNode = nodeList.pop(0)
 
             successors = generateSuccessors(newNode)
+            
+            dead_end = False
+            #Check if we've reached a dead end
+            if (len(successors) == 0):
+                dead_end = True
+                
+            if(dead_end):
+                print("No solution found")
+                return
 
             for successor in successors:
                 print("Successor: ", successor, "Final State: ", finalState, "Expansions: ", expansionCounter)
@@ -249,6 +258,8 @@ def dfs(initialState, finalState, outputFile):
     else:
         print("We were successful!")
         print("We expanded ", expansionCounter, "nodes")
+
+
 
 def iddfs(initialState, finalState, outputFile):
     print("Running iddfs...")
