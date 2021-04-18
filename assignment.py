@@ -255,7 +255,7 @@ def bfs(startNode, outputFile):
     print("Starting State:", startNode.state)
     print("Goal:", startNode.goal)
     #Establishes a queue of nodes
-    nodeList = [startNode.state]
+    nodeList = [startNode]
     #currentNode = initialState change back if no work
     currentNode = startNode
     checkedMoves = []
@@ -263,9 +263,10 @@ def bfs(startNode, outputFile):
     while True:
         if currentNode.state == startNode.goal:
             #Break out of the infinite loop because we have reached the solution
+            printSolution(currentNode, outputFile)
             break
         else:
-            newNode = node(nodeList.pop(0))
+            newNode = nodeList.pop(0)
 
             node_with_successors = generateSuccessors(newNode)
             
@@ -285,7 +286,7 @@ def bfs(startNode, outputFile):
                     break
                 else:
                     if successor.state not in checkedMoves:
-                        nodeList.append(successor.state)
+                        nodeList.append(successor)
                         checkedMoves.append(successor.state)
     return
 
@@ -305,14 +306,15 @@ def dfs(startNode, outputFile):
         if (len(node_with_successors.children) == 0):
             dead_end = True
             break
-        next_to_check = node_with_successors.children.pop().state
-        currentNode = node(next_to_check)
+        next_to_check = node_with_successors.children.pop()
+        currentNode = next_to_check
 
     if(dead_end):
         print("Reached the end of the graph and could not find a solution")
     else:
         print("We were successful!")
         print("We expanded ", expansionCounter, "nodes")
+        printSolution(currentNode, outputFile)
 
 
 def iddfs(startNode, outputFile):
@@ -331,6 +333,7 @@ def iddfs(startNode, outputFile):
     while True:
         if currentNode.state == startNode.goal:
             #Break out of the infinite loop because we have reached the solution
+            printSolution(currentNode, outputFile)
             break
         else:
             newNode = nodeList.pop(0)
@@ -362,6 +365,17 @@ def iddfs(startNode, outputFile):
 
 def astar(initialState, finalState, outputFile):
     print("Running astar...")
+
+
+def printSolution(finalNode, ourputFile):
+
+    print("Solution: ", finalNode.state)
+
+    parent = finalNode.parent
+
+    while parent is not None:
+        print("Solution: ", parent.state)
+        parent = parent.parent
 
 
 if __name__ == '__main__':
