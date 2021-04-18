@@ -4,6 +4,27 @@ import sys
 import math
 import csv
 
+
+class node(object):
+
+    goal = None
+
+    def __init__(self, state, children = None):
+        self.state = state
+        self.depth = 0
+        self.children = []
+        self.parent = None
+        for child in self.children:
+            child.parent = self
+
+    def add_goal(self, target):
+        self.goal = target
+
+    def add_children(self, successors):
+        self.children = successors
+
+
+
 #Global Counters
 expansionCounter = 0
 explored_set = []
@@ -37,10 +58,12 @@ def check_valid_state(state):
             isValid = False
     return isValid
 
-def generateSuccessors(node, successors = []):
+def generateSuccessors(nodeObject, successors = []):
     print("Generating Successors...")
     global expansionCounter
 
+    #Get current state from node object
+    node = nodeObject.state
 
     #First we have to find out which side the boat is on
     #node[0] is left bank
@@ -191,19 +214,87 @@ def generateSuccessors(node, successors = []):
         print("Condition 5 Successor: ", successor_final)
         successors.append(successor_final)
 
-
+    nodeObject.add_children(successors)
     print("Successors: ", successors)
     expansionCounter += 1
-    return successors
+    return nodeObject
 
-def bfs(initialState, finalState, outputFile):
+def bfs(startNode, outputFile):
     print("Running bfs...")
-    print("Starting State:", initialState)
-
+    print("Starting State:", startNode.state)
+    print("Goal:", startNode.goal)
     #Establishes a queue of nodes
-    nodeList = [initialState]
-    currentNode = initialState
+    nodeList = [startNode.state]
+    #currentNode = initialState change back if no work
+    currentNode = startNode
     checkedMoves = []
+
+    while True:
+        if currentNode.state == startNode.goal:
+            #Break out of the infinite loop because we have reached the solution
+            break
+        else:
+            newNode = node(nodeList.pop(0))
+
+            node_with_successors = generateSuccessors(newNode)
+            
+            dead_end = False
+            #Check if we've reached a dead end
+            if (len(node_with_successors.children) == 0):
+                dead_end = True
+                
+            if(dead_end):
+                print("No solution found")
+                return
+
+            for successor in node_with_successors.children:
+                print("Successor: ", successor, "Final State: ", startNode.goal, "Expansions: ", expansionCounter)
+                if successor == startNode.goal:
+                    currentNode = node(successor)
+                    break
+                else:
+                    if successor not in checkedMoves:
+                        nodeList.append(successor)
+                        checkedMoves.append(successor)
+    return
+
+
+#Function to solve depth-first search
+def dfs(startNode, outputFile):
+    currentNode = startNode
+    explored_set.append(startNode.state)
+
+    dead_end = False
+    print("final state is: ", startNode.goal)
+
+    #Keep searching the graph if we don't find the final state
+    while (currentNode.state != startNode.goal):
+        node_with_successors = generateSuccessors(currentNode)
+        #Check if we've reached a dead end
+        if (len(node_with_successors.children) == 0):
+            dead_end = True
+            break
+        next_to_check = node_with_successors.children.pop()
+        currentNode = node(next_to_check)
+
+    if(dead_end):
+        print("Reached the end of the graph and could not find a solution")
+    else:
+        print("We were successful!")
+        print("We expanded ", expansionCounter, "nodes")
+
+
+def iddfs_helper(initialState, finalState, depth_limit):
+
+    currentNode = initialState
+
+    nodeList = []
+
+    explored_set.append(initialState)
+
+    checkedMoves = []
+
+    depth_counter = 0
 
     while True:
         if currentNode == finalState:
@@ -229,40 +320,27 @@ def bfs(initialState, finalState, outputFile):
                     currentNode = successor
                     break
                 else:
-                    if successor not in checkedMoves:
+                    if (successor not in checkedMoves):#and (successorDepth < depth_limit):
                         nodeList.append(successor)
                         checkedMoves.append(successor)
-    return
-
-
-#Function to solve depth-first search
-def dfs(initialState, finalState, outputFile):
-    currentNode = initialState
-    explored_set.append(initialState)
-
-    dead_end = False
-    print("final state is: ", finalState)
-
-    #Keep searching the graph if we don't find the final state
-    while (currentNode != finalState):
-        successors = generateSuccessors(currentNode)
-        #Check if we've reached a dead end
-        if (len(successors) == 0):
-            dead_end = True
-            break
-        next_to_check = successors.pop()
-        currentNode = next_to_check
-
-    if(dead_end):
-        print("Reached the end of the graph and could not find a solution")
-    else:
-        print("We were successful!")
-        print("We expanded ", expansionCounter, "nodes")
-
-
+                #Increment to go to next depth associated with successor
+                depth_counter += 1
 
 def iddfs(initialState, finalState, outputFile):
     print("Running iddfs...")
+
+    currentNode = initialState
+
+    depth_limit = 1
+
+    while (currentNode != finalState):
+        iddfs_helper(depth_limit)
+        #increment depthLimit counter for next iteration
+        depth_limit += 1
+    
+    return
+
+
 
 
 def astar(initialState, finalState, outputFile):
@@ -277,6 +355,10 @@ if __name__ == '__main__':
     #Here we will parse the files to get the proper input
     initialState, finalState, outputFile = entry()
 
+    startNode = node(initialState)
+
+    startNode.add_goal(finalState)
+
     #Here we get the mode that we want to run each number represents an algorithm
     # 1 = bfs (breadth first search)
     # 2 = dfs (depth first search)
@@ -286,9 +368,11 @@ if __name__ == '__main__':
     algo_mode = sys.argv[3]
 
     if algo_mode == "1":
-        bfs(initialState, finalState, outputFile)
+        #bfs(initialState, finalState, outputFile)
+        bfs(startNode, outputFile)
     elif algo_mode == "2":
-        dfs(initialState, finalState, outputFile)
+        #dfs(initialState, finalState, outputFile)
+        dfs(startNode, outputFile)
     elif algo_mode == "3":
         iddfs(initialState, finalState, outputFile)
     elif algo_mode == "4":
