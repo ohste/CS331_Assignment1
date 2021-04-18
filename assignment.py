@@ -63,7 +63,7 @@ def generateSuccessors(nodeObject, successors = []):
     global expansionCounter
 
     #Get current state from node object
-    node = nodeObject.state
+    nodeState = nodeObject.state
 
     #First we have to find out which side the boat is on
     #node[0] is left bank
@@ -73,14 +73,14 @@ def generateSuccessors(nodeObject, successors = []):
     is_boat_right_bank = True
 
 
-    if node[1][2] == 1:
+    if nodeState[1][2] == 1:
         is_boat_right_bank = True
-        boat_bank = node[1]
-        destination_bank = node[0]
+        boat_bank = nodeState[1]
+        destination_bank = nodeState[0]
     else:
         is_boat_right_bank = False
-        boat_bank = node[0]
-        destination_bank = node[1]
+        boat_bank = nodeState[0]
+        destination_bank = nodeState[1]
 
     #Get chicken and wolves from boat bank
     boat_bank_chickens = boat_bank[0]
@@ -91,8 +91,8 @@ def generateSuccessors(nodeObject, successors = []):
     destination_bank_wolves = destination_bank[1]
 
     #print("Boat is in Right Bank:", is_boat_right_bank, " Boat:", boat_bank)
-    print("Current state: ", node)
-    explored_set.append(node)
+    print("Current state: ", nodeState)
+    explored_set.append(nodeState)
     #1) Conditions: Put one chicken in the boat, more chickens than wolves
 
     #For Right Banks
@@ -115,7 +115,8 @@ def generateSuccessors(nodeObject, successors = []):
     successor_final = [successor_left, successor_right]
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 1 Successor: ", successor_final)
-        successors.append(successor_final)
+        successor_node = node(successor_final)
+        successors.append(successor_node)
 
     #2)Conditions: Put two chickens in the boat, At least 2 chickens at Boat bank, Destination wolves - destination chickens <= 2, destination chickens > destination wolves + 1 OR boat bank chickens == 2
 
@@ -138,7 +139,8 @@ def generateSuccessors(nodeObject, successors = []):
     successor_final = [successor_left, successor_right]
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 2 Successor: ", successor_final)
-        successors.append(successor_final)
+        successor_node = node(successor_final)
+        successors.append(successor_node)
 
     #3)Conditions: Put one wolf in the boat, Destination bank chickens must be greater than wolves + incoming wolf.
 
@@ -161,7 +163,8 @@ def generateSuccessors(nodeObject, successors = []):
     successor_final = [successor_left, successor_right]
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 3 Successor: ", successor_final)
-        successors.append(successor_final)
+        successor_node = node(successor_final)
+        successors.append(successor_node)
 
     #4)Condtions: Put one wolf and one chicken in the boat, Destination bank needs wolves <= chickens, Boat bank needs wolves >=1 & chickens >= 1
 
@@ -188,7 +191,8 @@ def generateSuccessors(nodeObject, successors = []):
     successor_final = [successor_left, successor_right]
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 4 Successor: ", successor_final)
-        successors.append(successor_final)
+        successor_node = node(successor_final)
+        successors.append(successor_node)
 
 
     #5)Conditions: Put two wolves in the boat, Destination bank chickens == 0 OR Destination bank wolves <= chickens -1, Boat bank wolves >= 2
@@ -212,9 +216,11 @@ def generateSuccessors(nodeObject, successors = []):
     successor_final = [successor_left, successor_right]
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 5 Successor: ", successor_final)
-        successors.append(successor_final)
+        successor_node = node(successor_final)
+        successors.append(successor_node)
 
     nodeObject.add_children(successors)
+    #Should be a bunce of Node objects
     print("Successors: ", successors)
     expansionCounter += 1
     return nodeObject
@@ -248,14 +254,14 @@ def bfs(startNode, outputFile):
                 return
 
             for successor in node_with_successors.children:
-                print("Successor: ", successor, "Final State: ", startNode.goal, "Expansions: ", expansionCounter)
-                if successor == startNode.goal:
-                    currentNode = node(successor)
+                print("Successor: ", successor.state, "Final State: ", startNode.goal, "Expansions: ", expansionCounter)
+                if successor.state == startNode.goal:
+                    currentNode = successor
                     break
                 else:
-                    if successor not in checkedMoves:
-                        nodeList.append(successor)
-                        checkedMoves.append(successor)
+                    if successor.state not in checkedMoves:
+                        nodeList.append(successor.state)
+                        checkedMoves.append(successor.state)
     return
 
 
@@ -274,7 +280,7 @@ def dfs(startNode, outputFile):
         if (len(node_with_successors.children) == 0):
             dead_end = True
             break
-        next_to_check = node_with_successors.children.pop()
+        next_to_check = node_with_successors.children.pop().state
         currentNode = node(next_to_check)
 
     if(dead_end):
@@ -284,57 +290,58 @@ def dfs(startNode, outputFile):
         print("We expanded ", expansionCounter, "nodes")
 
 
-def iddfs_helper(initialState, finalState, depth_limit):
+def iddfs_helper(startNode, depth_limit):
 
-    currentNode = initialState
+    currentNode = startNode
 
     nodeList = []
 
-    explored_set.append(initialState)
+    explored_set.append(currentNode.state)
 
     checkedMoves = []
 
     depth_counter = 0
 
     while True:
-        if currentNode == finalState:
+        if currentNode.state == startNode.goal:
             #Break out of the infinite loop because we have reached the solution
             break
         else:
-            newNode = nodeList.pop(0)
+            newNode = node(nodeList.pop(0))
 
-            successors = generateSuccessors(newNode)
+            node_with_successors = generateSuccessors(newNode)
             
             dead_end = False
             #Check if we've reached a dead end
-            if (len(successors) == 0):
+            if (len(node_with_successors.children) == 0):
                 dead_end = True
+                break
                 
             if(dead_end):
                 print("No solution found")
                 return
 
-            for successor in successors:
-                print("Successor: ", successor, "Final State: ", finalState, "Expansions: ", expansionCounter)
-                if successor == finalState:
-                    currentNode = successor
+            for successor in node_with_successors.children:
+                print("Successor: ", successor, "Final State: ", startNode.goal, "Expansions: ", expansionCounter)
+                if successor == startNode.goal:
+                    currentNode = node(successor)
                     break
                 else:
-                    if (successor not in checkedMoves):#and (successorDepth < depth_limit):
+                    if (successor not in checkedMoves) and (suc < depth_limit):
                         nodeList.append(successor)
                         checkedMoves.append(successor)
                 #Increment to go to next depth associated with successor
                 depth_counter += 1
 
-def iddfs(initialState, finalState, outputFile):
+def iddfs(startNode, outputFile):
     print("Running iddfs...")
 
-    currentNode = initialState
+    currentNode = startNode
 
     depth_limit = 1
 
-    while (currentNode != finalState):
-        iddfs_helper(depth_limit)
+    while (currentNode.state != startNode.goal):
+        iddfs_helper(startNode, depth_limit)
         #increment depthLimit counter for next iteration
         depth_limit += 1
     
@@ -374,7 +381,7 @@ if __name__ == '__main__':
         #dfs(initialState, finalState, outputFile)
         dfs(startNode, outputFile)
     elif algo_mode == "3":
-        iddfs(initialState, finalState, outputFile)
+        iddfs(startNode, outputFile)
     elif algo_mode == "4":
         astar(initialState, finalState, outputFile)
     else:
