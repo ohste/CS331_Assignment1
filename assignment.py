@@ -23,6 +23,15 @@ class node(object):
     def add_children(self, successors):
         self.children = successors
 
+    def add_parent(self, parent):
+        self.parent = parent
+
+    def increment_depth(self):
+        if self.parent is None:
+            self.depth = 0
+        else:
+            self.depth = self.parent.depth + 1
+
 
 
 #Global Counters
@@ -116,6 +125,10 @@ def generateSuccessors(nodeObject, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 1 Successor: ", successor_final)
         successor_node = node(successor_final)
+        #Increments depth of node for use in iddfs
+        successor_node.add_parent(nodeObject)
+        successor_node.increment_depth()
+        print("Successor Depth in function: ", successor_node.depth)
         successors.append(successor_node)
 
     #2)Conditions: Put two chickens in the boat, At least 2 chickens at Boat bank, Destination wolves - destination chickens <= 2, destination chickens > destination wolves + 1 OR boat bank chickens == 2
@@ -140,6 +153,9 @@ def generateSuccessors(nodeObject, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 2 Successor: ", successor_final)
         successor_node = node(successor_final)
+        #Increments depth of node for use in iddfs
+        successor_node.add_parent(nodeObject)
+        successor_node.increment_depth()
         successors.append(successor_node)
 
     #3)Conditions: Put one wolf in the boat, Destination bank chickens must be greater than wolves + incoming wolf.
@@ -164,6 +180,9 @@ def generateSuccessors(nodeObject, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 3 Successor: ", successor_final)
         successor_node = node(successor_final)
+        #Increments depth of node for use in iddfs
+        successor_node.add_parent(nodeObject)
+        successor_node.increment_depth()
         successors.append(successor_node)
 
     #4)Condtions: Put one wolf and one chicken in the boat, Destination bank needs wolves <= chickens, Boat bank needs wolves >=1 & chickens >= 1
@@ -192,6 +211,9 @@ def generateSuccessors(nodeObject, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 4 Successor: ", successor_final)
         successor_node = node(successor_final)
+        #Increments depth of node for use in iddfs
+        successor_node.add_parent(nodeObject)
+        successor_node.increment_depth()
         successors.append(successor_node)
 
 
@@ -217,6 +239,9 @@ def generateSuccessors(nodeObject, successors = []):
     if (check_valid_state(successor_final) and successor_final not in explored_set):
         print("Condition 5 Successor: ", successor_final)
         successor_node = node(successor_final)
+        #Increments depth of node for use in iddfs
+        successor_node.add_parent(nodeObject)
+        successor_node.increment_depth()
         successors.append(successor_node)
 
     nodeObject.add_children(successors)
@@ -290,24 +315,25 @@ def dfs(startNode, outputFile):
         print("We expanded ", expansionCounter, "nodes")
 
 
-def iddfs_helper(startNode, depth_limit):
+def iddfs(startNode, outputFile):
 
     currentNode = startNode
 
-    nodeList = []
+    nodeList = [startNode]
 
     explored_set.append(currentNode.state)
 
     checkedMoves = []
 
-    depth_counter = 0
+    depth_limit = 2
+    
 
     while True:
         if currentNode.state == startNode.goal:
             #Break out of the infinite loop because we have reached the solution
             break
         else:
-            newNode = node(nodeList.pop(0))
+            newNode = nodeList.pop(0)
 
             node_with_successors = generateSuccessors(newNode)
             
@@ -315,39 +341,23 @@ def iddfs_helper(startNode, depth_limit):
             #Check if we've reached a dead end
             if (len(node_with_successors.children) == 0):
                 dead_end = True
-                break
                 
             if(dead_end):
                 print("No solution found")
                 return
 
             for successor in node_with_successors.children:
-                print("Successor: ", successor, "Final State: ", startNode.goal, "Expansions: ", expansionCounter)
-                if successor == startNode.goal:
-                    currentNode = node(successor)
+                print("Successor: ", successor.state, "Final State: ", startNode.goal, "Expansions: ", expansionCounter)
+                if successor.state == startNode.goal:
+                    currentNode = successor
                     break
                 else:
-                    if (successor not in checkedMoves) and (suc < depth_limit):
-                        nodeList.append(successor)
-                        checkedMoves.append(successor)
-                #Increment to go to next depth associated with successor
-                depth_counter += 1
-
-def iddfs(startNode, outputFile):
-    print("Running iddfs...")
-
-    currentNode = startNode
-
-    depth_limit = 1
-
-    while (currentNode.state != startNode.goal):
-        iddfs_helper(startNode, depth_limit)
-        #increment depthLimit counter for next iteration
-        depth_limit += 1
-    
+                    print("Successor Depth:", successor.depth)
+                    if (successor.state not in checkedMoves) and (successor.depth < depth_limit):
+                        nodeList.insert(0, successor)
+                        checkedMoves.append(successor.state)
+            depth_limit += 1
     return
-
-
 
 
 def astar(initialState, finalState, outputFile):
