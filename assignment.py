@@ -302,11 +302,20 @@ def bfs(startNode, outputFile):
         currentNode = next_to_check
 
     if(dead_end):
+        f = open(outputFile, "a")
         print("Reached the end of the graph and could not find a solution")
+        f.write("Reached the end of the graph and could not find a solution")
+        f.close()
     else:
+        f = open(outputFile, "a")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("We were successful!")
-        print("We expanded ", expansionCounter, "nodes")
-        printSolution(currentNode, outputFile)
+        print("We expanded ", expansionCounter, "nodes total")
+        f.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+        f.write("We were successful!\n")
+        f.write("We expanded "+ str(expansionCounter)+ " nodes total using breadth-first search\n")
+        printSolution(currentNode, f)
+        f.close()
 
 
 #Function to solve depth-first search
@@ -327,11 +336,20 @@ def dfs(startNode, outputFile):
         currentNode = next_to_check
 
     if(dead_end):
+        f = open(outputFile, "a")
         print("Reached the end of the graph and could not find a solution")
+        f.write("Reached the end of the graph and could not find a solution")
+        f.close()
     else:
+        f = open(outputFile, "a")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("We were successful!")
-        print("We expanded ", expansionCounter, "nodes")
-        printSolution(currentNode, outputFile)
+        print("We expanded ", expansionCounter, "nodes total")
+        f.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+        f.write("We were successful!\n")
+        f.write("We expanded "+ str(expansionCounter)+ " nodes total using depth-first search\n")
+        printSolution(currentNode, f)
+        f.close()
 
 
 def iddfs(startNode, outputFile):
@@ -366,11 +384,20 @@ def iddfs(startNode, outputFile):
                 break
         depth_limit += 1
     if(dead_end):
+        f = open(outputFile, "a")
         print("Reached the end of the graph and could not find a solution")
+        f.write("Reached the end of the graph and could not find a solution")
+        f.close()
     else:
+        f = open(outputFile, "a")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("We were successful!")
-        print("We expanded ", expansionCounter, "nodes")
-        printSolution(currentNode, outputFile)
+        print("We expanded ", expansionCounter, "nodes total")
+        f.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+        f.write("We were successful!\n")
+        f.write("We expanded "+ str(expansionCounter)+ " nodes total using iterative deepening depth-first search\n")
+        printSolution(currentNode, f)
+        f.close()
 
 
 def astar(initialState, finalState, outputFile):
@@ -391,23 +418,37 @@ def astar(initialState, finalState, outputFile):
         currentNode = next_to_check
 
     if(dead_end):
+        f = open(outputFile, "a")
         print("Reached the end of the graph and could not find a solution")
+        f.write("Reached the end of the graph and could not find a solution")
+        f.close()
     else:
+        f = open(outputFile, "a")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("We were successful!")
-        print("We expanded ", expansionCounter, "nodes")
-        printSolution(currentNode, outputFile)
+        print("We expanded ", expansionCounter, "nodes total")
+        f.write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+        f.write("We were successful!\n")
+        f.write("We expanded "+ str(expansionCounter)+ " nodes total using astar search\n")
+        printSolution(currentNode, f)
+        f.close()
 
 
 
-def printSolution(finalNode, ourputFile):
+def printSolution(finalNode, outputFile, counter = 0):
 
-    print("Solution: ", finalNode.state)
 
-    parent = finalNode.parent
+    if finalNode.parent is not None:
+        counter += 1
+        printSolution(finalNode.parent, outputFile, counter)
+    else:
+        print("~~~~~~Solution~~~~~")
+        print("It took", counter, "moves to win")
+        outputFile.write("~~~~~~Solution~~~~~\n")
+        outputFile.write("It took "+ str(counter)+ "moves to win\n")
+    print(finalNode.state)
+    outputFile.write(str(finalNode.state)+"\n")
 
-    while parent is not None:
-        print("Solution: ", parent.state)
-        parent = parent.parent
 
 
 if __name__ == '__main__':
