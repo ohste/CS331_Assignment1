@@ -90,7 +90,8 @@ def generateSuccessors(nodeObject, goal = []):
     successors = []
     #Get current state from node object
     nodeState = nodeObject.state
-
+    if (nodeState in explored_set):
+        return []
     #First we have to find out which side the boat is on
     #node[0] is left bank
     #node[1] is right bank
@@ -146,6 +147,7 @@ def generateSuccessors(nodeObject, goal = []):
         #Increments depth of node for use in iddfs
         successor_node.add_parent(nodeObject)
         successor_node.increment_depth()
+
         successor_node.set_cost(goal)
         print("Successor Cost: ", successor_node.cost)
         print("Successor Depth in function: ", successor_node.depth)
@@ -272,69 +274,56 @@ def generateSuccessors(nodeObject, goal = []):
         print("Successor Cost: ", successor_node.cost)
         successors.append(successor_node)
 
+    #print("What is successors: ", successors)
     nodeObject.add_children(successors)
     #Should be a bunce of Node objects
     #print("Successors: ", successors)
     expansionCounter += 1
-    return nodeObject
+    return successors
 
 def bfs(startNode, outputFile):
     print("Running bfs...")
     print("Starting State:", startNode.state)
     print("Goal:", startNode.goal)
     #Establishes a queue of nodes
-    nodeList = [startNode]
-    #currentNode = initialState change back if no work
     currentNode = startNode
-    checkedMoves = []
-
-    while True:
-        if currentNode.state == startNode.goal:
-            #Break out of the infinite loop because we have reached the solution
-            printSolution(currentNode, outputFile)
-            break
-        else:
-            newNode = nodeList.pop(0)
-
-            node_with_successors = generateSuccessors(newNode)
-
-            dead_end = False
-            #Check if we've reached a dead end
-            if (len(node_with_successors.children) == 0):
-                dead_end = True
-
-            if(dead_end):
-                print("No solution found")
-                return
-
-            for successor in node_with_successors.children:
-                print("Successor: ", successor.state, "Final State: ", startNode.goal, "Expansions: ", expansionCounter)
-                if successor.state == startNode.goal:
-                    currentNode = successor
-                    break
-                else:
-                    if successor.state not in checkedMoves:
-                        nodeList.append(successor)
-                        checkedMoves.append(successor.state)
-    return
-
-
-#Function to solve depth-first search
-def dfs(startNode, outputFile):
-    currentNode = startNode
-    explored_set.append(startNode.state)
-
+    nodes_to_explore = [startNode]
     dead_end = False
     print("final state is: ", startNode.goal)
 
     #Keep searching the graph if we don't find the final state
     while (currentNode.state != startNode.goal):
-        node_with_successors = generateSuccessors(currentNode)
+        nodes_to_explore += generateSuccessors(currentNode, startNode.goal)
         #Check if we've reached a dead end
-        if (len(node_with_successors.children) == 0):
+        if (len(nodes_to_explore) == 0):
             dead_end = True
             break
-        next_to_check = node_with_successors.children.pop()
+        next_to_check = nodes_to_explore.pop(0)
+        currentNode = next_to_check
+
+    if(dead_end):
+        print("Reached the end of the graph and could not find a solution")
+    else:
+        print("We were successful!")
+        print("We expanded ", expansionCounter, "nodes")
+        printSolution(currentNode, outputFile)
+
+
+#Function to solve depth-first search
+def dfs(startNode, outputFile):
+    currentNode = startNode
+    nodes_to_explore = [startNode]
+    dead_end = False
+    print("final state is: ", startNode.goal)
+
+    #Keep searching the graph if we don't find the final state
+    while (currentNode.state != startNode.goal):
+        nodes_to_explore += generateSuccessors(currentNode, startNode.goal)
+        #Check if we've reached a dead end
+        if (len(nodes_to_explore) == 0):
+            dead_end = True
+            break
+        next_to_check = nodes_to_explore.pop()
         currentNode = next_to_check
 
     if(dead_end):
@@ -346,64 +335,58 @@ def dfs(startNode, outputFile):
 
 
 def iddfs(startNode, outputFile):
-
-    currentNode = startNode
-
-    nodeList = [startNode]
-
-    explored_set.append(currentNode.state)
-
-    checkedMoves = []
-
     depth_limit = 2
+    found_goal = False
+    while (not found_goal):
+        currentNode = startNode
+        nodes_to_explore = [startNode]
+        global explored_set
+        explored_set = []
+        dead_end = False
 
+        #print("final state is: ", startNode.goal)
 
-    while True:
-        if currentNode.state == startNode.goal:
-            #Break out of the infinite loop because we have reached the solution
-            printSolution(currentNode, outputFile)
-            break
-        else:
-            newNode = nodeList.pop(0)
+        #Keep searching the graph if we don't find the final state
+        while (currentNode.state != startNode.goal):
+            next_nodes = generateSuccessors(currentNode, startNode.goal)
+            for item in next_nodes:
+                if (item.depth <= depth_limit):
+                    nodes_to_explore.append(item)
 
-            node_with_successors = generateSuccessors(newNode)
-
-            dead_end = False
             #Check if we've reached a dead end
-            if (len(node_with_successors.children) == 0):
+            if (len(nodes_to_explore) == 0):
+                print("reached the end of this depth limit")
                 dead_end = True
-
-            if(dead_end):
-                print("No solution found")
-                return
-
-            for successor in node_with_successors.children:
-                print("Successor: ", successor.state, "Final State: ", startNode.goal, "Expansions: ", expansionCounter)
-                if successor.state == startNode.goal:
-                    currentNode = successor
-                    break
-                else:
-                    print("Successor Depth:", successor.depth)
-                    if (successor.state not in checkedMoves) and (successor.depth < depth_limit):
-                        nodeList.insert(0, successor)
-                        checkedMoves.append(successor.state)
-            depth_limit += 1
-    return
+                break
+            next_to_check = nodes_to_explore.pop()
+            currentNode = next_to_check
+            if (currentNode.state == startNode.goal):
+                dead_end = False
+                found_goal = True
+                break
+        depth_limit += 1
+    if(dead_end):
+        print("Reached the end of the graph and could not find a solution")
+    else:
+        print("We were successful!")
+        print("We expanded ", expansionCounter, "nodes")
+        printSolution(currentNode, outputFile)
 
 
 def astar(initialState, finalState, outputFile):
     currentNode = startNode
     nodeList = [startNode]
     dead_end = False
+    nodes_to_check = []
     while (currentNode.state != startNode.goal):
-        node_with_successors = generateSuccessors(currentNode, finalState)
+        nodes_to_check += generateSuccessors(currentNode, finalState)
         #Check if we've reached a dead end
-        if (len(node_with_successors.children) == 0):
+        if (len(nodes_to_check) == 0):
             dead_end = True
             break
-        min_cost_node_index = node_with_successors.children.index(min(node_with_successors.children, key=attrgetter('cost')))
+        min_cost_node_index = nodes_to_check.index(min(nodes_to_check, key=attrgetter('cost')))
         print("min_cost_node_index", min_cost_node_index)
-        next_to_check = node_with_successors.children.pop(min_cost_node_index)
+        next_to_check = nodes_to_check.pop(min_cost_node_index)
         #print("The min cost node is ", next_to_check)
         currentNode = next_to_check
 
